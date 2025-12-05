@@ -1,0 +1,16 @@
+{
+  "$schema": "https://rcade.dev/manifest.schema.json",
+  "name": "radiosity",
+  "display_name": "radiosity",
+  "description": "radiosity",
+  "visibility": "public",
+  "authors": {
+    "display_name": "Keith Frost"
+  },
+  "dependencies": [
+    {
+      "name": "@rcade/input-classic",
+      "version": "1.0.0"
+    }
+  ]
+}
