@@ -8,7 +8,7 @@ const HEIGHT = 262;
 const sketch = (p: p5) => {
   let dots = []
 
-  const pR = 60
+  const pR = 30
   const pR3 = pR * pR * pR
 
 
@@ -50,7 +50,7 @@ const sketch = (p: p5) => {
       dots[i].move();
       dots[i].draw();
       const d = p.sqrt(dots[i].d2);
-      if (d < pR || d > 800) {
+      if (d < pR || d > 400) {
 	dots[i] = new Particle();
       }
     }
@@ -91,13 +91,13 @@ const sketch = (p: p5) => {
     constructor() {
       this.radius = 1.0 - p.log(0.01 + 0.99 * p.random())
       this.radius3 = p.pow(this.radius, 3)
-      const r = p.random(180, 240)
+      const r = p.random(90, 120)
       const theta = p.random() * 2 * p.PI
       this.x = r * p.cos(theta)
       this.y = r * p.sin(theta)
       this.z = 10 * p.randomGaussian()
-      this.vx = -p.sin(theta)
-      this.vy = p.cos(theta)
+      this.vx = -0.5 * p.sin(theta)
+      this.vy = 0.5 * p.cos(theta)
       this.vz = 0.01 * p.randomGaussian()
       this.d2 = this.x * this.x + this.y * this.y + this.z * this.z
     }
