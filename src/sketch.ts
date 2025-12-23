@@ -1,9 +1,13 @@
 import p5 from "p5";
-import { PLAYER_1, SYSTEM } from "@rcade/plugin-input-classic";
+import { PLAYER_1, PLAYER_2, SYSTEM } from "@rcade/plugin-input-classic";
+import { PLAYER_1 as SP1, PLAYER_2 as SP2} from "@rcade/plugin-input-spinners";
 
 // Rcade game dimensions
 const WIDTH = 336;
 const HEIGHT = 262;
+
+const SPIN1 = SP1.SPINNER;
+const SPIN2 = SP2.SPINNER;
 
 const sketch = (p: p5) => {
   let dots = []
@@ -11,6 +15,10 @@ const sketch = (p: p5) => {
   const pR = 30
   const pR3 = pR * pR * pR
 
+  let camLat = 0.0;
+  let camLon = 0.0;
+  let camRad = 800;
+  let cam;
 
   let gameStarted = false;
 
@@ -20,28 +28,43 @@ const sketch = (p: p5) => {
     for (let i = 0; i < 100; i++) {
       dots.push(new Particle());
     }
+
+    cam = p.createCamera();
+    const cz = camRad * p.sin(camLat);
+    const cxy = camRad * p.cos(camLat);
+    const cx = cxy * p.cos(camLon);
+    const cy = cxy * p.sin(camLon);
+    cam.setPosition(cx, cy, cz);
+    cam.lookAt(0, 0, 0);
+    p.setCamera(cam);
   };
 
   p.draw = () => {
     p.background(0);
-    p.pointLight(255, 128, 64, 100000, 0, 0);
-    p.pointLight(0, 0, 128, 0, 0, 0);
+    p.pointLight(255, 255, 64, 100000, 0, 0);
+    p.pointLight(0, 0, 255, -100000, 0, 0);
     p.sphere(pR);
 
-    // if (!gameStarted) {
-    //   // Show start screen
-    //   p.fill(255);
-    //   p.textSize(18);
-    //   p.textAlign(p.CENTER, p.CENTER);
-    //   p.text("Press 1P START", WIDTH / 2, HEIGHT / 2);
-    //   p.textSize(12);
-    //   p.text("Use D-PAD to move", WIDTH / 2, HEIGHT / 2 + 30);
+    if (!gameStarted) {
+      if (SYSTEM.ONE_PLAYER) {
+	gameStarted = true;
+      }
+      return;
+    }
 
-    //   if (SYSTEM.ONE_PLAYER) {
-    //     gameStarted = true;
-    //   }
-    //   return;
-    // }
+    const delta1 = SPIN1.consume_step_delta();
+    const delta2 = SPIN2.consume_step_delta();
+
+    camLat += 0.1 * delta1 / SPIN1.step_resolution;
+    camLon += 0.1 * delta2 / SPIN2.step_resolution;
+
+    const cz = camRad * p.sin(camLat);
+    const cxy = camRad * p.cos(camLat);
+    const cx = cxy * p.cos(camLon);
+    const cy = cxy * p.sin(camLon);
+
+    cam.setPosition(cx, cy, cz);
+    cam.lookAt(0, 0, 0);
 
     for (var i = 0; i < dots.length; i++) {
       dots[i].accelerate();
