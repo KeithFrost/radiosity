@@ -59,24 +59,40 @@ const sketch = (p: p5) => {
     const delta2 = SPIN2.consume_step_delta();
 
     cam.tilt(0.1 * delta1 / SPIN1.step_resolution);
-    cam.pan(0.1 * delta2 / SPIN2.step_resolution);
 
-    if (PLAYER_1.DPAD.left) cam.roll(0.01);
-    if (PLAYER_1.DPAD.right) cam.roll(-0.01);
+    if (PLAYER_1.B) {
+      cam.roll(0.1 * delta2 / SPIN2.step_resolution);
+    } else {
+      cam.pan(0.1 * delta2 / SPIN2.step_resolution);
+    }
 
+    const sh = dots[0];
+
+    let scale = 1.0;
     let thrust = 0.0;
     if (PLAYER_1.DPAD.up) {
-      thrust += 0.01;
+      thrust += 0.01 / 800;
     }
     if (PLAYER_1.DPAD.down) {
-      thrust -= 0.01;
+      thrust -= 0.01 / 800;
+    }
+    if (PLAYER_1.DPAD.left) {
+      scale -= 0.01;
+    }
+    if (PLAYER_1.DPAD.right) {
+      scale += 0.01;
+    }
+
+    if (scale != 1.0) {
+      sh.vx *= scale;
+      sh.vy *= scale;
+      sh.vz *= scale;
     }
 
     if (thrust != 0.0) {
-      const sh = dots[0];
-      sh.vx += thrust * cam.upX;
-      sh.vy += thrust * cam.upY;
-      sh.vz += thrust * cam.upZ;
+      sh.vx -= thrust * cam.eyeX;
+      sh.vy -= thrust * cam.eyeY;
+      sh.vz -= thrust * cam.eyeZ;
     }
 
     if (PLAYER_1.A) cam.lookAt(0, 0, 0);
