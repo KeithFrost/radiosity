@@ -61,8 +61,8 @@ const sketch = (p: p5) => {
     cam.tilt(0.1 * delta1 / SPIN1.step_resolution);
     cam.pan(0.1 * delta2 / SPIN2.step_resolution);
 
-    if (PLAYER_1.DPAD.left) cam.roll(0.001);
-    if (PLAYER_1.DPAD.right) cam.roll(-0.001);
+    if (PLAYER_1.DPAD.left) cam.roll(0.01);
+    if (PLAYER_1.DPAD.right) cam.roll(-0.01);
 
     let thrust = 0.0;
     if (PLAYER_1.DPAD.up) {
