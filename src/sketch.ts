@@ -86,7 +86,7 @@ const sketch = (p: p5) => {
       dots[i].move();
       dots[i].draw();
       const d = p.sqrt(dots[i].d2);
-      if (i != 0 && (d < pR || d > 1200)) {
+      if (i != 0 && (d < pR || d > 1600)) {
 	dots[i] = new Particle(0, 0);
       }
     }
