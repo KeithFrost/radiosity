@@ -15,37 +15,22 @@ const sketch = (p: p5) => {
   const pR = 30
   const pR3 = pR * pR * pR
 
-  let camLat = 0.0;
-  let camLon = 0.0;
-  let camRad = 800;
   let cam;
 
   let gameStarted = false;
-
-  p.pointCam = (posn) => {
-    const dz = camRad * p.sin(camLat);
-    const dxy = camRad * p.cos(camLat);
-    const dx = dxy * p.cos(camLon);
-    const dy = dxy * p.sin(camLon);
-    cam.lookAt(posn.x - dx, posn.y - dy, posn.z - dz);
-  }
 
   p.makeShip = () => {
     dots[0] = new Particle(1, 800);
     const posn = dots[0];
     cam = p.createCamera();
     cam.setPosition(posn.x, posn.y, posn.z);
-    camRad = p.sqrt(posn.x * posn.x + posn.y * posn.y + posn.z * posn.z);
-    camLat = p.asin(posn.z / camRad);
-    camLon = p.atan2(posn.y, posn.x);
-    p.pointCam(posn);
+    cam.lookAt(0, 0, 0);
     p.setCamera(cam);
   }
 
   p.updateShip = () => {
     const posn = dots[0];
     cam.setPosition(posn.x, posn.y, posn.z);
-    p.pointCam(posn);
   }
 
   p.setup = () => {
@@ -73,11 +58,28 @@ const sketch = (p: p5) => {
     const delta1 = SPIN1.consume_step_delta();
     const delta2 = SPIN2.consume_step_delta();
 
-    camLat += 0.1 * delta1 / SPIN1.step_resolution;
-    camLon += 0.1 * delta2 / SPIN2.step_resolution;
+    cam.tilt(0.1 * delta1 / SPIN1.step_resolution);
+    cam.pan(0.1 * delta2 / SPIN2.step_resolution);
 
-    camLat = (camLat + p.PI) % (2 * p.PI) - p.PI;
-    camLon = (camLon + p.PI) % (2 * p.PI) - p.PI;
+    if (PLAYER_1.DPAD.left) cam.roll(0.001);
+    if (PLAYER_1.DPAD.right) cam.roll(-0.001);
+
+    let thrust = 0.0;
+    if (PLAYER_1.DPAD.up) {
+      thrust += 0.01;
+    }
+    if (PLAYER_1.DPAD.down) {
+      thrust -= 0.01;
+    }
+
+    if (thrust != 0.0) {
+      const sh = dots[0];
+      sh.vx += thrust * cam.upX;
+      sh.vy += thrust * cam.upY;
+      sh.vz += thrust * cam.upZ;
+    }
+
+    if (PLAYER_1.A) cam.lookAt(0, 0, 0);
 
     for (var i = 0; i < dots.length; i++) {
       dots[i].accelerate();
