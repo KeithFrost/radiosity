@@ -59,28 +59,24 @@ const sketch = (p: p5) => {
     const delta2 = SPIN2.consume_step_delta();
 
     cam.tilt(0.1 * delta1 / SPIN1.step_resolution);
+    cam.pan(0.1 * delta2 / SPIN2.step_resolution);
 
-    if (PLAYER_1.B) {
-      cam.roll(0.1 * delta2 / SPIN2.step_resolution);
-    } else {
-      cam.pan(0.1 * delta2 / SPIN2.step_resolution);
+
+    if (PLAYER_1.DPAD.left) {
+      cam.roll(-0.01);
+    }
+
+    if (PLAYER_1.DPAD.right) {
+      cam.roll(0.01);
     }
 
     const sh = dots[0];
-
     let scale = 1.0;
-    let thrust = 0.0;
     if (PLAYER_1.DPAD.up) {
-      thrust += 0.01 / 800;
+      scale += 0.05;
     }
     if (PLAYER_1.DPAD.down) {
-      thrust -= 0.01 / 800;
-    }
-    if (PLAYER_1.DPAD.left) {
-      scale -= 0.01;
-    }
-    if (PLAYER_1.DPAD.right) {
-      scale += 0.01;
+      scale -= 0.05;
     }
 
     if (scale != 1.0) {
@@ -89,13 +85,15 @@ const sketch = (p: p5) => {
       sh.vz *= scale;
     }
 
-    if (thrust != 0.0) {
-      sh.vx -= thrust * cam.eyeX;
-      sh.vy -= thrust * cam.eyeY;
-      sh.vz -= thrust * cam.eyeZ;
+    if (PLAYER_1.A) {
+      sh.vx -= 0.01 * cam.upX;
+      sh.vy -= 0.01 * cam.upY;
+      sh.vz -= 0.01 * cam.upZ;
     }
 
-    if (PLAYER_1.A) cam.lookAt(0, 0, 0);
+    if (PLAYER_1.B) {
+      cam.lookAt(0, 0, 0);
+    }
 
     for (var i = 0; i < dots.length; i++) {
       dots[i].accelerate();
@@ -104,8 +102,12 @@ const sketch = (p: p5) => {
       dots[i].move();
       dots[i].draw();
       const d = p.sqrt(dots[i].d2);
-      if (i != 0 && (d < pR || d > 1600)) {
-	dots[i] = new Particle(0, 0);
+      if (d < pR || d > 1600) {
+	if (i == 0) {
+	  dots[0] = new Particle(1, 800);
+	} else {
+	  dots[i] = new Particle(0, 0);
+	}
       }
     }
     p.updateShip();
