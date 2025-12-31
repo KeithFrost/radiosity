@@ -10,7 +10,7 @@ const SPIN1 = SP1.SPINNER;
 const SPIN2 = SP2.SPINNER;
 
 const sketch = (p: p5) => {
-  let dots = []
+  let dots = [null]
 
   const pR = 30
   const pR3 = pR * pR * pR
@@ -22,21 +22,39 @@ const sketch = (p: p5) => {
 
   let gameStarted = false;
 
+  p.pointCam = (posn) => {
+    const dz = camRad * p.sin(camLat);
+    const dxy = camRad * p.cos(camLat);
+    const dx = dxy * p.cos(camLon);
+    const dy = dxy * p.sin(camLon);
+    cam.lookAt(posn.x - dx, posn.y - dy, posn.z - dz);
+  }
+
+  p.makeShip = () => {
+    dots[0] = new Particle(1, 800);
+    const posn = dots[0];
+    cam = p.createCamera();
+    cam.setPosition(posn.x, posn.y, posn.z);
+    camRad = p.sqrt(posn.x * posn.x + posn.y * posn.y + posn.z * posn.z);
+    camLat = p.asin(posn.z / camRad);
+    camLon = p.atan2(posn.y, posn.x);
+    p.pointCam(posn);
+    p.setCamera(cam);
+  }
+
+  p.updateShip = () => {
+    const posn = dots[0];
+    cam.setPosition(posn.x, posn.y, posn.z);
+    p.pointCam(posn);
+  }
+
   p.setup = () => {
     p.createCanvas(WIDTH, HEIGHT, p.WEBGL);
     p.noStroke();
-    for (let i = 0; i < 100; i++) {
-      dots.push(new Particle());
+    p.makeShip();
+    for (let i = 1; i <= 100; i++) {
+      dots.push(new Particle(0, 0));
     }
-
-    cam = p.createCamera();
-    const cz = camRad * p.sin(camLat);
-    const cxy = camRad * p.cos(camLat);
-    const cx = cxy * p.cos(camLon);
-    const cy = cxy * p.sin(camLon);
-    cam.setPosition(cx, cy, cz);
-    cam.lookAt(0, 0, 0);
-    p.setCamera(cam);
   };
 
   p.draw = () => {
@@ -58,13 +76,8 @@ const sketch = (p: p5) => {
     camLat += 0.1 * delta1 / SPIN1.step_resolution;
     camLon += 0.1 * delta2 / SPIN2.step_resolution;
 
-    const cz = camRad * p.sin(camLat);
-    const cxy = camRad * p.cos(camLat);
-    const cx = cxy * p.cos(camLon);
-    const cy = cxy * p.sin(camLon);
-
-    cam.setPosition(cx, cy, cz);
-    cam.lookAt(0, 0, 0);
+    camLat = (camLat + p.PI) % (2 * p.PI) - p.PI;
+    camLon = (camLon + p.PI) % (2 * p.PI) - p.PI;
 
     for (var i = 0; i < dots.length; i++) {
       dots[i].accelerate();
@@ -73,10 +86,11 @@ const sketch = (p: p5) => {
       dots[i].move();
       dots[i].draw();
       const d = p.sqrt(dots[i].d2);
-      if (d < pR || d > 400) {
-	dots[i] = new Particle();
+      if (i != 0 && (d < pR || d > 1200)) {
+	dots[i] = new Particle(0, 0);
       }
     }
+    p.updateShip();
   };
 
 
@@ -111,16 +125,23 @@ const sketch = (p: p5) => {
     // }
 
   class Particle {
-    constructor() {
-      this.radius = 1.0 - p.log(0.01 + 0.99 * p.random())
+    constructor(radius, r) {
+      if (radius == 0) {
+	this.radius = 1.0 - p.log(0.01 + 0.99 * p.random());
+      } else {
+	this.radius = radius;
+      }
       this.radius3 = p.pow(this.radius, 3)
-      const r = p.random(90, 120)
+      if (r == 0) {
+	r = p.random(90, 120)
+      }
       const theta = p.random() * 2 * p.PI
       this.x = r * p.cos(theta)
       this.y = r * p.sin(theta)
       this.z = 10 * p.randomGaussian()
-      this.vx = -0.5 * p.sin(theta)
-      this.vy = 0.5 * p.cos(theta)
+
+      this.vx = -5.0 * p.sin(theta) / p.sqrt(r)
+      this.vy = 5.0 * p.cos(theta) / p.sqrt(r)
       this.vz = 0.01 * p.randomGaussian()
       this.d2 = this.x * this.x + this.y * this.y + this.z * this.z
     }
