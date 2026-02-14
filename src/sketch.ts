@@ -19,6 +19,14 @@ const sketch = (p: p5) => {
 
   let gameStarted = false;
 
+  p.camDir = (cam) => {
+    let dx = cam.centerX - cam.eyeX;
+    let dy = cam.centerY - cam.eyeY;
+    let dz = cam.centerZ - cam.eyeZ;
+    let norm = 1.0 / p.sqrt(dx * dx + dy * dy + dz * dz);
+    return [dx * norm, dy * norm, dz * norm];
+  }
+
   p.makeShip = () => {
     dots[0] = new Particle(1, 800);
     const posn = dots[0];
@@ -71,28 +79,35 @@ const sketch = (p: p5) => {
     }
 
     const sh = dots[0];
-    let scale = 1.0;
+    const thrust_dir = p.camDir(cam);
+    let scale = 0.0;
     if (PLAYER_1.DPAD.up) {
-      scale += 0.05;
+      scale += 0.01;
     }
     if (PLAYER_1.DPAD.down) {
-      scale -= 0.05;
+      scale -= 0.01;
     }
 
-    if (scale != 1.0) {
-      sh.vx *= scale;
-      sh.vy *= scale;
-      sh.vz *= scale;
+    if (scale != 0.0) {
+      sh.vx += scale * thrust_dir[0];
+      sh.vy += scale * thrust_dir[1];
+      sh.vz += scale * thrust_dir[2];
     }
 
     if (PLAYER_1.A) {
-      sh.vx -= 0.01 * cam.upX;
-      sh.vy -= 0.01 * cam.upY;
-      sh.vz -= 0.01 * cam.upZ;
+      cam.lookAt(
+	0.95 * cam.centerX,
+	0.95 * cam.centerY,
+	0.95 * cam.centerZ
+      );
     }
 
     if (PLAYER_1.B) {
-      cam.lookAt(0, 0, 0);
+      cam.lookAt(
+	cam.centerX + 10.0 * sh.vx,
+	cam.centerY + 10.0 * sh.vy,
+	cam.centerZ + 10.0 * sh.vz
+      );
     }
 
     for (var i = 0; i < dots.length; i++) {
